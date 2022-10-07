@@ -1,4 +1,4 @@
-1.	Create Launch Template/AMI/Launch Configuration and deploy EC2 instances using  them.  
+1.	Create Launch Template/AMI/Launch Configuration  
 aws ec2 create-launch-template --launch-template-name TemplateWebServer --version-description AutoScalingVersion1 --launch-template-data {\"NetworkInterfaces\":[{\"DeviceIndex\":0,\"AssociatePublicIpAddress\":true,\"Groups\":[\"sgxxxxxxxxxxxx\"],\"DeleteOnTermination\":true}],\"ImageId\":\"amixxxxxxxxxxx\",\"InstanceType\":\"t2.micro\",\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"WebServerASG\"}]}]} --region eu-west-2
 
 
