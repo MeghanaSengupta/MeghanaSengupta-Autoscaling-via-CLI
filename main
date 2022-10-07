@@ -1,0 +1,39 @@
+1.	Create Launch Template/AMI/Launch Configuration and deploy EC2 instances using  them.  
+aws ec2 create-launch-template --launch-template-name TemplateWebServer --version-description AutoScalingVersion1 --launch-template-data {\"NetworkInterfaces\":[{\"DeviceIndex\":0,\"AssociatePublicIpAddress\":true,\"Groups\":[\"sgxxxxxxxxxxxx\"],\"DeleteOnTermination\":true}],\"ImageId\":\"amixxxxxxxxxxx\",\"InstanceType\":\"t2.micro\",\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"WebServerASG\"}]}]} --region eu-west-2
+
+
+2.	Using the configurations above - Create Autoscaling group with min 2, desired 3 and  max 5 EC2 instances   
+
+2.1.	To create our Auto Scaling Group run the following command:
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name WebServerASG --launch-template "LaunchTemplateName=TemplateWebServer" --min-size 2 --max-size 5 --desired-capacity 2 --availability-zones "eu-west-2a" "eu-west-2b" "eu-west-2c"
+ 
+2.2.Now run the following command to list all instances with Name: WebServerASG.
+aws ec2 describe-instances --filters "Name=tag:Name,Values=WebServerASG" --query "Reservations[].Instances[].InstanceId"
+Now run the following command to list all instances with Name: WebServerASG.
+For Website Testing
+(a)
+.To test that the website is up. Select one of the two Instance Ids to use and run the following command to get the Public IP address.
+aws ec2 describe-instances --instance-ids <instance id> --query 'Reservations[*].Instances[*].PublicIpAddress' --output text
+
+Next use the curl command to see if the website is up.
+curl <Public IP>
+ 
+For Auto Scaling Testing
+Let’s test the Auto Scaling Group by deleting the two instances.
+aws ec2 terminate-instances --instance-ids "i-0c442689180acbce1" "i-06269b1bd0c79489b"
+ 
+(b) Now run the following to list all running instances with the Tag Name WebserverASG. 
+aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:Name,Values=WebServerASG" --query "Reservations[].Instances[].InstanceId"
+ 
+Clean Up
+1.Delete our original instance.
+ aws ec2 terminate-instances --instance-ids "i-0c442689180acbce1"
+2. Delete our Auto Scaling Group and since we have instances running we will need to force delete.
+ aws autoscaling delete-auto-scaling-group --auto-scaling-group-name WebServerASG --force-delete
+3. Now when we list our running instances, we should not get anything back except empty brackets []. Note: if you have other instances running outside of the ones we’ve created then they will be listed.
+ aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId"
+4. Delete Launch Template
+ aws ec2 delete-launch-template --launch-template-name TemplateWebServer
+5. Delete AMI image.
+ aws ec2 deregister-image --image-id ami-060c4f2d72966500a
+ 
